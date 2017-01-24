@@ -42,10 +42,8 @@ int padding = 54624;
 short int* audioread(char* name)
 {
 
-	short int *song_1;
-	short int *song_2;
+	short int *song;
 	FILE *WAV_in = fopen (name, "rb");
-	short int* pad;
 
 	if (WAV_in == NULL)
 	{
@@ -59,15 +57,10 @@ short int* audioread(char* name)
 
 	datasize = InfoHeader.Subchunk2Size;
 
-
-	pad = m_malloc(padding*sizeof(short int));
-
-	song_1 = m_malloc(datasize/2);
-	song_2 = m_malloc(datasize/2);
+	song = m_malloc(datasize);
 
 
-
-    if (song_1 == NULL || song_2 == NULL)
+    if (song == NULL)
      {
     	 printf("out of memory!\n");
      }
@@ -78,23 +71,14 @@ short int* audioread(char* name)
      }
 
     printf("Reading WAV file...\n");
-    for (i=0; i < (InfoHeader.Subchunk2Size/sizeof(short int)); i++)
-    {
-    	if(i < padding)
-    		fread(&pad, sizeof(short int), 1, WAV_in);
-    	else
-    		if(i%2 == 0)
-    			fread(&song_1[(i-padding)/2], sizeof(song_1[i]), 1,  WAV_in);
-    		else
-    			fread(&song_2[(i-padding)/2], sizeof(song_2[i]), 1,  WAV_in);
-    }
 
+    fread(&song, sizeof(short int), (datasize/sizeof(short int)),  WAV_in);
 
     fclose(WAV_in);
 
     printf("Finish reading WAV file...\n");
 
-	return song_1;
+	return song;
 }
 
 int counter;
@@ -115,6 +99,8 @@ interrupt void interrupt4(void)
 		output_left_sample(lamb[index]);
 	else
 		output_left_sample(0);
+
+	index += 2;
 
 //	if (record ==1)
 //	{
